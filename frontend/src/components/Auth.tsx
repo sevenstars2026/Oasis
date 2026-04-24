@@ -9,7 +9,7 @@ export const Auth = () => {
     username: '',
     email: '',
     password: '',
-    job_type: 'merchant',
+    job_type: 'citizen',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,7 +45,6 @@ export const Auth = () => {
     <div className="auth-container">
       <div className="auth-box">
         <h1 className="auth-title">🌍 Oasis</h1>
-        <p className="auth-subtitle">第二国度</p>
 
         <div className="auth-tabs">
           <button
@@ -88,18 +87,6 @@ export const Auth = () => {
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             required
           />
-
-          {!isLogin && (
-            <select
-              value={formData.job_type}
-              onChange={(e) => setFormData({ ...formData, job_type: e.target.value })}
-            >
-              <option value="merchant">商人 (Merchant)</option>
-              <option value="warrior">战士 (Warrior)</option>
-              <option value="crafter">工匠 (Crafter)</option>
-              <option value="scholar">学者 (Scholar)</option>
-            </select>
-          )}
 
           {error && <div className="auth-error">{error}</div>}
 

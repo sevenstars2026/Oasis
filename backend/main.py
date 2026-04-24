@@ -14,6 +14,7 @@ from api.routes.trades import router as trades_router
 from api.routes.map import router as map_router
 from api.routes.jobs import router as jobs_router
 from api.routes.properties import router as properties_router
+from api.routes.websocket import router as websocket_router
 
 # 初始化FastAPI应用
 app = FastAPI(
@@ -65,6 +66,7 @@ app.include_router(trades_router)
 app.include_router(map_router)
 app.include_router(jobs_router)
 app.include_router(properties_router)
+app.include_router(websocket_router)
 
 
 if __name__ == "__main__":

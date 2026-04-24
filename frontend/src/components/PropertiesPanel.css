@@ -1,0 +1,239 @@
+.properties-panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.properties-panel.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.properties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.properties-header h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 24px;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  border-color: transparent;
+  color: #fff;
+}
+
+.properties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.property-card {
+  display: flex;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.property-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(139, 92, 246, 0.3);
+  transform: translateY(-2px);
+}
+
+.property-card.owned {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.property-icon {
+  font-size: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: 12px;
+}
+
+.property-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.property-info h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.property-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.property-type {
+  padding: 4px 10px;
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 6px;
+  color: #a78bfa;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.property-capacity {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.property-status {
+  padding: 4px 10px;
+  background: rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  color: #10b981;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.property-prices {
+  display: flex;
+  gap: 16px;
+}
+
+.price-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.price-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+}
+
+.price-value {
+  color: #fbbf24;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.property-value {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.value-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+}
+
+.value-amount {
+  color: #fbbf24;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.property-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.buy-btn,
+.rent-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.buy-btn {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+}
+
+.buy-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.rent-btn {
+  background: rgba(59, 130, 246, 0.8);
+}
+
+.rent-btn:hover {
+  background: rgba(59, 130, 246, 1);
+  transform: translateY(-2px);
+}
+
+.empty-state {
+  padding: 40px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+.properties-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.properties-panel::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.properties-panel::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.5);
+  border-radius: 4px;
+}
