@@ -8,7 +8,7 @@ class PlayerCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=32)
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
-    job_type: str = Field(..., pattern="^(warrior|merchant|crafter|scholar)$")
+    job_type: str = Field(default="citizen")
 
 
 class PlayerLogin(BaseModel):
@@ -32,7 +32,7 @@ class PlayerResponse(BaseModel):
 class TokenResponse(BaseModel):
     """登陆成功返回的Token"""
     access_token: str
-    token_type: str = "bearer"
+    token_type: str = "Bearer"
     player: PlayerResponse
 
 
@@ -71,8 +71,8 @@ class TaskResponse(BaseModel):
         from_attributes = True
         
     @classmethod
-    def from_orm(cls, obj):
-        # 自定义from_orm来做字段映射
+    def model_validate(cls, obj):
+        # Pydantic v2 兼容的字段映射
         data = {
             'id': obj.id,
             'title': obj.title,
@@ -87,7 +87,7 @@ class TaskResponse(BaseModel):
             'created_at': obj.created_at,
             'completed_at': obj.completed_at,
         }
-        return cls(**data)
+        return super().model_validate(data)
 
 
 class TaskProgressResponse(BaseModel):
@@ -133,7 +133,8 @@ class TradeResponse(BaseModel):
         from_attributes = True
 
     @classmethod
-    def from_orm(cls, obj):
+    def model_validate(cls, obj):
+        # Pydantic v2 兼容的验证方法
         raw_buyer_id = getattr(obj, "buyer_id", None)
         raw_status = getattr(obj, "status", "pending")
         buyer_id = None if raw_status == "pending" and raw_buyer_id == obj.seller_id else raw_buyer_id

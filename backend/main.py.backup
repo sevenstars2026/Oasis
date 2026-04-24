@@ -46,16 +46,14 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "http://localhost:5174",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
         "http://127.0.0.1:3000"
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["Content-Type", "Authorization", "Accept"],
+    expose_headers=["Content-Type"],
 )
 
 
@@ -77,13 +75,13 @@ async def health():
 
 
 # 注册路由
-app.include_router(players_router, tags=["Players"])
-app.include_router(tasks_router, tags=["Tasks"])
-app.include_router(trades_router, tags=["Trades"])
-app.include_router(map_router, tags=["Map"])
-app.include_router(jobs_router, tags=["Jobs"])
-app.include_router(properties_router, tags=["Properties"])
-app.include_router(websocket_router, tags=["WebSocket"])
+app.include_router(players_router, prefix="/api", tags=["Players"])
+app.include_router(tasks_router, prefix="/api", tags=["Tasks"])
+app.include_router(trades_router, prefix="/api", tags=["Trades"])
+app.include_router(map_router, prefix="/api", tags=["Map"])
+app.include_router(jobs_router, prefix="/api", tags=["Jobs"])
+app.include_router(properties_router, prefix="/api", tags=["Properties"])
+app.include_router(websocket_router, prefix="/ws", tags=["WebSocket"])
 
 
 if __name__ == "__main__":

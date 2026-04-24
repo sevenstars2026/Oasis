@@ -7,6 +7,7 @@ from datetime import datetime
 
 from models import Location, Resource, PlayerState, Player
 from utils.exceptions import GameException
+from services.websocket_service import manager
 
 
 class MapService:
@@ -39,7 +40,7 @@ class MapService:
         ).all()
 
     @staticmethod
-    def move_player(db: Session, player_id: int, location_id: int, x: float = None, y: float = None) -> Dict:
+    async def move_player(db: Session, player_id: int, location_id: int, x: float = None, y: float = None) -> Dict:
         """移动玩家到新位置"""
         # 验证位置存在
         location = db.query(Location).filter(Location.id == location_id).first()
@@ -55,8 +56,10 @@ class MapService:
 
         # 获取或创建玩家状态
         player_state = db.query(PlayerState).filter(PlayerState.player_id == player_id).first()
+        old_location_id = None
 
         if player_state:
+            old_location_id = player_state.location_id
             # 更新旧位置的玩家数
             if player_state.location_id:
                 old_location = db.query(Location).filter(Location.id == player_state.location_id).first()
@@ -92,6 +95,50 @@ class MapService:
         db.commit()
         db.refresh(player_state)
         db.refresh(location)
+
+        # WebSocket 实时同步
+        # 更新 ConnectionManager 中的位置信息
+        if old_location_id:
+            manager.update_player_location(player_id, old_location_id, location_id)
+        else:
+            manager.update_player_location(player_id, 0, location_id)
+
+        manager.update_player_position(
+            player_id,
+            player_state.x,
+            player_state.y,
+            location_id,
+            player_state.current_activity or "idle"
+        )
+
+        # 广播位置更新
+        await manager.broadcast_position_update(player_id, location_id)
+
+        # 通知旧位置的玩家（玩家离开）
+        if old_location_id and old_location_id != location_id:
+            await manager.broadcast_to_location(
+                {
+                    "type": "player_left",
+                    "data": {"player_id": player_id}
+                },
+                old_location_id
+            )
+
+        # 通知新位置的玩家（玩家进入）
+        await manager.broadcast_to_location(
+            {
+                "type": "player_joined",
+                "data": {
+                    "player_id": player_id,
+                    "name": player.name if player else "Unknown",
+                    "job": player.job if player else "citizen",
+                    "x": player_state.x,
+                    "y": player_state.y
+                }
+            },
+            location_id,
+            exclude_player_id=player_id
+        )
 
         return {
             "success": True,

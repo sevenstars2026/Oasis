@@ -8,7 +8,7 @@ class WebSocketService {
 
   connect(token: string) {
     this.token = token;
-    const wsUrl = `ws://localhost:8001/ws?token=${token}`;
+    const wsUrl = `ws://localhost:8000/ws?token=${token}`;
 
     this.ws = new WebSocket(wsUrl);
 

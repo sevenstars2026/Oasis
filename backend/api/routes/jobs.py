@@ -10,6 +10,7 @@ from utils.auth import get_current_player
 from utils.exceptions import GameException
 from services.job_service import JobService
 from pydantic import BaseModel
+from models import Player
 
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -72,6 +73,39 @@ def get_available_jobs(
     return jobs
 
 
+@router.get("/current")
+def get_current_work(
+    current_player: Player = Depends(get_current_player),
+    db: Session = Depends(get_db)
+):
+    """获取当前工作会话"""
+    work_session = JobService.get_active_work_session(db, current_player.id)
+
+    if not work_session:
+        return {"active": False, "work_session": None}
+
+    # 计算已工作时长
+    duration = (datetime.now() - work_session.start_time).total_seconds() / 60
+
+    return {
+        "active": True,
+        "work_session": work_session,
+        "duration_minutes": int(duration)
+    }
+
+
+@router.get("/history", response_model=List[WorkSessionResponse])
+def get_work_history(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    current_player: Player = Depends(get_current_player),
+    db: Session = Depends(get_db)
+):
+    """获取工作历史"""
+    history = JobService.get_work_history(db, current_player.id, skip, limit)
+    return history
+
+
 @router.get("/{job_id}", response_model=JobResponse)
 def get_job(
     job_id: int,
@@ -87,12 +121,12 @@ def get_job(
 @router.post("/start")
 def start_work(
     request: StartWorkRequest,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db)
 ):
     """开始工作"""
     try:
-        work_session = JobService.start_work(db, current_player["player_id"], request.job_id)
+        work_session = JobService.start_work(db, current_player.id, request.job_id)
         return {
             "success": True,
             "work_session_id": work_session.id,
@@ -106,45 +140,12 @@ def start_work(
 @router.post("/end")
 def end_work(
     request: EndWorkRequest,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db)
 ):
     """结束工作并结算"""
     try:
-        result = JobService.end_work(db, current_player["player_id"], request.work_session_id)
+        result = JobService.end_work(db, current_player.id, request.work_session_id)
         return result
     except GameException as e:
         raise HTTPException(status_code=e.code, detail=e.message)
-
-
-@router.get("/history", response_model=List[WorkSessionResponse])
-def get_work_history(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
-    current_player: dict = Depends(get_current_player),
-    db: Session = Depends(get_db)
-):
-    """获取工作历史"""
-    history = JobService.get_work_history(db, current_player["player_id"], skip, limit)
-    return history
-
-
-@router.get("/current")
-def get_current_work(
-    current_player: dict = Depends(get_current_player),
-    db: Session = Depends(get_db)
-):
-    """获取当前工作会话"""
-    work_session = JobService.get_active_work_session(db, current_player["player_id"])
-
-    if not work_session:
-        return {"active": False, "work_session": None}
-
-    # 计算已工作时长
-    duration = (datetime.now() - work_session.start_time).total_seconds() / 60
-
-    return {
-        "active": True,
-        "work_session": work_session,
-        "duration_minutes": int(duration)
-    }

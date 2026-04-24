@@ -1,4 +1,4 @@
-from typing import Dict, Set
+from typing import Dict, Set, Optional
 from fastapi import WebSocket
 import json
 from datetime import datetime
@@ -9,6 +9,8 @@ class ConnectionManager:
         self.active_connections: Dict[int, WebSocket] = {}
         # location_id -> Set[player_id]
         self.location_players: Dict[int, Set[int]] = {}
+        # player_id -> {x, y, location_id, activity}
+        self.player_positions: Dict[int, dict] = {}
 
     async def connect(self, websocket: WebSocket, player_id: int):
         await websocket.accept()
@@ -57,5 +59,39 @@ class ConnectionManager:
 
     def get_all_online_players(self) -> list:
         return list(self.active_connections.keys())
+
+    def update_player_position(self, player_id: int, x: float, y: float, location_id: int, activity: str = "idle"):
+        """更新玩家位置"""
+        self.player_positions[player_id] = {
+            "player_id": player_id,
+            "x": x,
+            "y": y,
+            "location_id": location_id,
+            "activity": activity,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    def get_player_position(self, player_id: int) -> Optional[dict]:
+        """获取玩家位置"""
+        return self.player_positions.get(player_id)
+
+    def get_nearby_players(self, location_id: int, exclude_player_id: int = None) -> list:
+        """获取同一地点的所有玩家位置"""
+        nearby = []
+        if location_id in self.location_players:
+            for pid in self.location_players[location_id]:
+                if pid != exclude_player_id and pid in self.player_positions:
+                    nearby.append(self.player_positions[pid])
+        return nearby
+
+    async def broadcast_position_update(self, player_id: int, location_id: int):
+        """广播玩家位置更新到同一地点的其他玩家"""
+        if player_id in self.player_positions:
+            position = self.player_positions[player_id]
+            message = {
+                "type": "player_move",
+                "data": position
+            }
+            await self.broadcast_to_location(message, location_id, exclude_player_id=player_id)
 
 manager = ConnectionManager()

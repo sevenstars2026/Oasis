@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from models import Player
+from models import Player, PlayerState
 from schemas import PlayerCreate
 from utils.auth import hash_password, verify_password
 from utils.exceptions import (
@@ -18,7 +18,7 @@ class PlayerService:
     def create_player(db: Session, player_create: PlayerCreate) -> Player:
         """创建新玩家"""
         hashed_password = hash_password(player_create.password)
-        
+
         db_player = Player(
             name=player_create.username,  # schema用username，模型用name
             email=player_create.email,
@@ -26,11 +26,26 @@ class PlayerService:
             job=player_create.job_type,  # schema用job_type，模型用job
             gold=1000.0,  # 初始金币
         )
-        
+
         try:
             db.add(db_player)
             db.commit()
             db.refresh(db_player)
+
+            # 获取 plaza 位置 ID
+            from models import Location
+            plaza = db.query(Location).filter(Location.name == "plaza").first()
+            plaza_id = plaza.id if plaza else 1
+
+            # 创建玩家状态，默认位置为 plaza
+            player_state = PlayerState(
+                player_id=db_player.id,
+                location_id=plaza_id,
+                current_activity="idle"
+            )
+            db.add(player_state)
+            db.commit()
+
             return db_player
         except IntegrityError as e:
             db.rollback()

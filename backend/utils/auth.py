@@ -15,13 +15,17 @@ security = HTTPBearer()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    # bcrypt限制密码最长72字节
+    return pwd_context.hash(password[:72])
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return pwd_context.verify(plain_password[:72], hashed_password)
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
+    # 确保 sub 是字符串
+    if "sub" in to_encode and not isinstance(to_encode["sub"], str):
+        to_encode["sub"] = str(to_encode["sub"])
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -33,9 +37,10 @@ def get_current_user(
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        player_id: int = payload.get("sub")
-        if player_id is None:
+        player_id_str: str = payload.get("sub")
+        if player_id_str is None:
             raise HTTPException(status_code=401, detail="Invalid token")
+        player_id = int(player_id_str)
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
@@ -48,9 +53,10 @@ def get_current_user(
 async def get_current_user_ws(token: str, db: Session) -> Player:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        player_id: int = payload.get("sub")
-        if player_id is None:
+        player_id_str: str = payload.get("sub")
+        if player_id_str is None:
             return None
+        player_id = int(player_id_str)
     except JWTError:
         return None
 

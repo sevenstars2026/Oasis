@@ -8,6 +8,7 @@ from schemas import TradeCreate, TradeResponse, MarketStatsResponse
 from services.trade_service import TradeService
 from utils.auth import get_current_player
 from utils.exceptions import GameException
+from models import Player
 
 router = APIRouter(prefix="/trades", tags=["trades"])
 
@@ -15,13 +16,13 @@ router = APIRouter(prefix="/trades", tags=["trades"])
 @router.post("/create", response_model=TradeResponse)
 def create_trade(
     trade_data: TradeCreate,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db),
 ):
     """创建交易挂单；若可匹配则自动撮合并返回已接受交易"""
     try:
-        trade = TradeService.create_trade(db, current_player["player_id"], trade_data)
-        return TradeResponse.from_orm(trade)
+        trade = TradeService.create_trade(db, current_player.id, trade_data)
+        return TradeResponse.model_validate(trade)
     except GameException as e:
         raise HTTPException(status_code=e.code, detail=e.message)
 
@@ -44,7 +45,7 @@ def get_market(
         skip=skip,
         limit=limit,
     )
-    return [TradeResponse.from_orm(t) for t in trades]
+    return [TradeResponse.model_validate(t) for t in trades]
 
 
 @router.get("/stats", response_model=MarketStatsResponse)
@@ -56,13 +57,13 @@ def get_market_stats(db: Session = Depends(get_db)):
 @router.post("/{trade_id}/accept", response_model=TradeResponse)
 def accept_trade(
     trade_id: int,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db),
 ):
     """接受挂单"""
     try:
-        trade = TradeService.accept_trade(db, trade_id, current_player["player_id"])
-        return TradeResponse.from_orm(trade)
+        trade = TradeService.accept_trade(db, trade_id, current_player.id)
+        return TradeResponse.model_validate(trade)
     except GameException as e:
         raise HTTPException(status_code=e.code, detail=e.message)
 
@@ -70,13 +71,13 @@ def accept_trade(
 @router.post("/{trade_id}/complete", response_model=TradeResponse)
 def complete_trade(
     trade_id: int,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db),
 ):
     """确认完成交易（双确认后结算）"""
     try:
-        trade = TradeService.complete_trade(db, trade_id, current_player["player_id"])
-        return TradeResponse.from_orm(trade)
+        trade = TradeService.complete_trade(db, trade_id, current_player.id)
+        return TradeResponse.model_validate(trade)
     except GameException as e:
         raise HTTPException(status_code=e.code, detail=e.message)
 
@@ -84,12 +85,12 @@ def complete_trade(
 @router.delete("/{trade_id}/cancel", response_model=TradeResponse)
 def cancel_trade(
     trade_id: int,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db),
 ):
     """取消交易挂单"""
     try:
-        trade = TradeService.cancel_trade(db, trade_id, current_player["player_id"])
-        return TradeResponse.from_orm(trade)
+        trade = TradeService.cancel_trade(db, trade_id, current_player.id)
+        return TradeResponse.model_validate(trade)
     except GameException as e:
         raise HTTPException(status_code=e.code, detail=e.message)

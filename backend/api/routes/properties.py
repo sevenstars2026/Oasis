@@ -9,6 +9,7 @@ from utils.auth import get_current_player
 from utils.exceptions import GameException
 from services.property_service import PropertyService
 from pydantic import BaseModel
+from models import Player
 
 
 router = APIRouter(prefix="/properties", tags=["properties"])
@@ -68,11 +69,11 @@ def get_properties_for_sale(
 
 @router.get("/my-properties", response_model=List[PropertyResponse])
 def get_my_properties(
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db)
 ):
     """获取我的房产"""
-    properties = PropertyService.get_player_properties(db, current_player["player_id"])
+    properties = PropertyService.get_player_properties(db, current_player.id)
     return properties
 
 
@@ -91,12 +92,12 @@ def get_property(
 @router.post("/buy")
 def buy_property(
     request: BuyPropertyRequest,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db)
 ):
     """购买房产"""
     try:
-        result = PropertyService.buy_property(db, current_player["player_id"], request.property_id)
+        result = PropertyService.buy_property(db, current_player.id, request.property_id)
         return result
     except GameException as e:
         raise HTTPException(status_code=e.code, detail=e.message)
@@ -105,14 +106,14 @@ def buy_property(
 @router.post("/rent-out")
 def rent_out_property(
     request: RentOutRequest,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db)
 ):
     """出租房产"""
     try:
         result = PropertyService.rent_out_property(
             db,
-            current_player["player_id"],
+            current_player.id,
             request.property_id,
             request.rent_price
         )
@@ -124,12 +125,12 @@ def rent_out_property(
 @router.post("/rent")
 def rent_property(
     request: RentPropertyRequest,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db)
 ):
     """租赁房产"""
     try:
-        result = PropertyService.rent_property(db, current_player["player_id"], request.property_id)
+        result = PropertyService.rent_property(db, current_player.id, request.property_id)
         return result
     except GameException as e:
         raise HTTPException(status_code=e.code, detail=e.message)
@@ -138,14 +139,14 @@ def rent_property(
 @router.post("/upgrade")
 def upgrade_property(
     request: UpgradeRequest,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db)
 ):
     """升级房产"""
     try:
         result = PropertyService.upgrade_property(
             db,
-            current_player["player_id"],
+            current_player.id,
             request.property_id,
             request.upgrade_type
         )

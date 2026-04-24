@@ -58,8 +58,8 @@ class JobService:
         if not player:
             raise GameException(code=404, message="玩家不存在")
 
-        # 验证职业匹配
-        if job.required_job_class and player.job != job.required_job_class:
+        # 验证职业匹配（citizen 可以做任何工作）
+        if job.required_job_class and player.job != job.required_job_class and player.job != "citizen":
             raise GameException(code=403, message=f"该工作需要 {job.required_job_class} 职业")
 
         # 检查玩家是否已经在工作
@@ -88,16 +88,17 @@ class JobService:
         # 更新工作的当前工人数
         job.current_workers += 1
 
-        # 更新玩家状态
+        db.add(work_session)
+        db.commit()
+        db.refresh(work_session)
+
+        # 更新玩家状态（在 work_session 有 id 之后）
         player_state = db.query(PlayerState).filter(PlayerState.player_id == player_id).first()
         if player_state:
             player_state.current_activity = "working"
             player_state.current_job_id = job_id
             player_state.work_session_id = work_session.id
-
-        db.add(work_session)
-        db.commit()
-        db.refresh(work_session)
+            db.commit()
 
         return work_session
 

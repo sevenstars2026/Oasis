@@ -44,7 +44,10 @@ class InvalidJobTypeError(OasisError):
 class GameException(OasisError):
     """通用游戏异常 - 用于任务、交易等业务逻辑"""
     def __init__(self, code: int = 400, message: str = "Game error"):
-        # 为了兼容性，保存code和message为公开属性
-        self.code = code
+        # 保存整数 code 用于 HTTP 状态码
+        self.status_code = code
         self.message = message
+        # 传递字符串 code 给父类以保持兼容性
         super().__init__(str(code), message, code)
+        # 重新设置 code 为整数，覆盖父类设置的字符串值
+        self.code = code

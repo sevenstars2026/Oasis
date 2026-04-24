@@ -50,9 +50,9 @@ class TaskService:
     def accept_task(db: Session, task_id: int, player_id: int) -> Task:
         """
         接受任务
-        
+
         规则:
-        - 玩家必须存在且职业与任务匹配
+        - 玩家必须存在且职业与任务匹配（citizen可以接任何任务）
         - 不能重复接受同一任务（已接受者无法再次接受）
         - 不能接受已完成的任务
         """
@@ -60,18 +60,19 @@ class TaskService:
         task = db.query(Task).filter(Task.id == task_id).first()
         if not task:
             raise GameException(code=404, message="任务不存在")
-        
+
         # 查询玩家
         player = db.query(Player).filter(Player.id == player_id).first()
         if not player:
             raise GameException(code=404, message="玩家不存在")
-        
-        # 验证玩家职业
-        if player.job != task.required_job:
-            raise GameException(
-                code=400,
-                message=f"职业不匹配。任务需要{task.required_job}，你是{player.job}"
-            )
+
+        # 验证玩家职业（citizen可以接任何任务）
+        if task.required_job and player.job != 'citizen':
+            if player.job != task.required_job:
+                raise GameException(
+                    code=400,
+                    message=f"职业不匹配。任务需要{task.required_job}，你是{player.job}"
+                )
         
         # 验证任务状态
         if task.status == "completed":

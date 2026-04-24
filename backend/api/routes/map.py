@@ -9,6 +9,7 @@ from utils.auth import get_current_player
 from utils.exceptions import GameException
 from services.map_service import MapService
 from pydantic import BaseModel
+from models import Player
 
 
 router = APIRouter(prefix="/map", tags=["map"])
@@ -74,16 +75,16 @@ def get_location_details(
 
 
 @router.post("/move")
-def move_player(
+async def move_player(
     move_data: MoveRequest,
-    current_player: dict = Depends(get_current_player),
+    current_player: Player = Depends(get_current_player),
     db: Session = Depends(get_db)
 ):
     """移动玩家到新位置"""
     try:
-        result = MapService.move_player(
+        result = await MapService.move_player(
             db,
-            current_player["player_id"],
+            current_player.id,
             move_data.location_id,
             move_data.x,
             move_data.y
