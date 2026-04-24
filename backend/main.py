@@ -10,6 +10,10 @@ import os
 from utils.database import init_db
 from api.routes.players import router as players_router
 from api.routes.tasks import router as tasks_router
+from api.routes.trades import router as trades_router
+from api.routes.map import router as map_router
+from api.routes.jobs import router as jobs_router
+from api.routes.properties import router as properties_router
 
 # 初始化FastAPI应用
 app = FastAPI(
@@ -57,6 +61,10 @@ async def root():
 # 注册路由
 app.include_router(players_router)
 app.include_router(tasks_router)
+app.include_router(trades_router)
+app.include_router(map_router)
+app.include_router(jobs_router)
+app.include_router(properties_router)
 
 
 if __name__ == "__main__":

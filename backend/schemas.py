@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
+from typing import Optional, Dict
 from datetime import datetime
 
 
@@ -100,3 +100,65 @@ class TaskProgressResponse(BaseModel):
     required_count: int
     progress_percent: float
     reward_per_player: float
+
+
+# ============ Trade Schemas ============
+
+class TradeCreate(BaseModel):
+    """创建交易挂单请求"""
+    item_name: str = Field(..., min_length=1, max_length=100)
+    quantity: int = Field(..., ge=1, le=9999)
+    price: float = Field(..., gt=0, le=1_000_000)
+    trade_type: str = Field(default="sell", pattern="^(sell|buy)$")
+
+
+class TradeResponse(BaseModel):
+    """交易响应"""
+    id: int
+    seller_id: int
+    buyer_id: Optional[int] = None
+    item_name: str
+    quantity: int
+    price: float
+    total_price: float
+    trade_type: str
+    status: str
+    seller_confirmed: bool
+    buyer_confirmed: bool
+    created_at: Optional[datetime] = None
+    accepted_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+    @classmethod
+    def from_orm(cls, obj):
+        raw_buyer_id = getattr(obj, "buyer_id", None)
+        raw_status = getattr(obj, "status", "pending")
+        buyer_id = None if raw_status == "pending" and raw_buyer_id == obj.seller_id else raw_buyer_id
+        return cls(
+            id=obj.id,
+            seller_id=obj.seller_id,
+            buyer_id=buyer_id,
+            item_name=obj.item_name,
+            quantity=obj.quantity,
+            price=obj.price,
+            total_price=obj.price * obj.quantity,
+            trade_type=getattr(obj, "trade_type", "sell"),
+            status=raw_status,
+            seller_confirmed=bool(getattr(obj, "seller_confirmed", False)),
+            buyer_confirmed=bool(getattr(obj, "buyer_confirmed", False)),
+            created_at=getattr(obj, "created_at", None),
+            accepted_at=getattr(obj, "accepted_at", None),
+            completed_at=getattr(obj, "completed_at", None),
+        )
+
+
+class MarketStatsResponse(BaseModel):
+    """市场统计响应"""
+    pending_orders: int
+    accepted_orders: int
+    completed_orders_24h: int
+    total_volume_24h: float
+    average_price_by_item: Dict[str, float]
