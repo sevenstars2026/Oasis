@@ -1,0 +1,106 @@
+.location-list {
+  padding: 20px;
+}
+
+.location-list h2 {
+  margin: 0 0 20px 0;
+  color: #333;
+}
+
+.locations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.location-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 15px;
+  transition: all 0.3s;
+}
+
+.location-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.location-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.location-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.zone-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.zone-badge.commercial {
+  background: #e8f5e9;
+  color: #4caf50;
+}
+
+.zone-badge.residential {
+  background: #e3f2fd;
+  color: #2196f3;
+}
+
+.zone-badge.industrial {
+  background: #fff3e0;
+  color: #ff9800;
+}
+
+.zone-badge.wilderness {
+  background: #f1f8e9;
+  color: #8bc34a;
+}
+
+.location-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+.move-btn {
+  width: 100%;
+  padding: 10px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.move-btn:hover:not(:disabled) {
+  background: #5568d3;
+}
+
+.move-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.panel-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 18px;
+  color: #999;
+}
